@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Predict customer churn probability using machine learning">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Customer Churn Prediction | ML Dashboard</title>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header class="header">
+        <h1><i class="fas fa-chart-line"></i> Customer Churn Prediction</h1>
+        <p class="subtitle">Enter customer details to predict churn probability and get retention recommendations</p>
+    </header>
+
+    <!-- Error Message -->
+    {% if error %}
+    <div class="error">
+        <strong><i class="fas fa-exclamation-triangle"></i> Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Prediction Form -->
+    <form method="POST" id="predictionForm">
+        <!-- Demographics Section -->
+        <h2><i class="fas fa-user-friends"></i> Customer Demographics</h2>
+        <div class="grid">
+            <div class="input-group" data-tooltip="Customer's gender">
+                <label for="gender"><i class="fas fa-venus-mars"></i> Gender</label>
+                <select name="gender" id="gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Is the customer 65 years or older?">
+                <label for="SeniorCitizen"><i class="fas fa-user-tie"></i> Senior Citizen</label>
+                <select name="SeniorCitizen" id="SeniorCitizen" required>
+                    <option value="">Select Option</option>
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Does the customer have a partner?">
+                <label for="Partner"><i class="fas fa-heart"></i> Partner</label>
+                <select name="Partner" id="Partner" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Does the customer have dependents?">
+                <label for="Dependents"><i class="fas fa-users"></i> Dependents</label>
+                <select name="Dependents" id="Dependents" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Number of months the customer has stayed with the company">
+                <label for="tenure"><i class="fas fa-calendar-alt"></i> Tenure (months)</label>
+                <input type="number" name="tenure" id="tenure" min="0" max="120" required placeholder="e.g., 24">
+            </div>
+
+            <div class="input-group" data-tooltip="Monthly charges amount">
+                <label for="MonthlyCharges"><i class="fas fa-file-invoice-dollar"></i> Monthly Charges ($)</label>
+                <input type="number" step="0.01" name="MonthlyCharges" id="MonthlyCharges" min="0" required placeholder="e.g., 79.99">
+            </div>
+
+            <div class="input-group" data-tooltip="Total charges to date">
+                <label for="TotalCharges"><i class="fas fa-money-check-alt"></i> Total Charges ($)</label>
+                <input type="number" step="0.01" name="TotalCharges" id="TotalCharges" min="0" required placeholder="e.g., 1500.50">
+            </div>
+        </div>
+
+        <!-- Services Section -->
+        <h2><i class="fas fa-wifi"></i> Services & Internet</h2>
+        <div class="grid">
+            <div class="input-group" data-tooltip="Does the customer have phone service?">
+                <label for="PhoneService"><i class="fas fa-phone"></i> Phone Service</label>
+                <select name="PhoneService" id="PhoneService" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Does the customer have multiple lines?">
+                <label for="MultipleLines"><i class="fas fa-phone-square-alt"></i> Multiple Lines</label>
+                <select name="MultipleLines" id="MultipleLines" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="No phone service">No phone service</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Type of internet service">
+                <label for="InternetService"><i class="fas fa-globe"></i> Internet Service</label>
+                <select name="InternetService" id="InternetService" required>
+                    <option value="">Select Option</option>
+                    <option value="DSL">DSL</option>
+                    <option value="Fiber optic">Fiber optic</option>
+                    <option value="No">No internet</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Does the customer have online security?">
+                <label for="OnlineSecurity"><i class="fas fa-shield-alt"></i> Online Security</label>
+                <select name="OnlineSecurity" id="OnlineSecurity" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Does the customer have online backup?">
+                <label for="OnlineBackup"><i class="fas fa-hdd"></i> Online Backup</label>
+                <select name="OnlineBackup" id="OnlineBackup" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Does the customer have device protection?">
+                <label for="DeviceProtection"><i class="fas fa-laptop"></i> Device Protection</label>
+                <select name="DeviceProtection" id="DeviceProtection" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Does the customer have tech support?">
+                <label for="TechSupport"><i class="fas fa-headset"></i> Tech Support</label>
+                <select name="TechSupport" id="TechSupport" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Does the customer have streaming TV?">
+                <label for="StreamingTV"><i class="fas fa-tv"></i> Streaming TV</label>
+                <select name="StreamingTV" id="StreamingTV" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Does the customer have streaming movies?">
+                <label for="StreamingMovies"><i class="fas fa-film"></i> Streaming Movies</label>
+                <select name="StreamingMovies" id="StreamingMovies" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="No internet service">No internet service</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Billing Section -->
+        <h2><i class="fas fa-credit-card"></i> Billing & Contract</h2>
+        <div class="grid">
+            <div class="input-group" data-tooltip="Contract type">
+                <label for="Contract"><i class="fas fa-file-contract"></i> Contract</label>
+                <select name="Contract" id="Contract" required>
+                    <option value="">Select Contract</option>
+                    <option value="Month-to-month">Month-to-month</option>
+                    <option value="One year">One year</option>
+                    <option value="Two year">Two year</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Does the customer use paperless billing?">
+                <label for="PaperlessBilling"><i class="fas fa-file-invoice"></i> Paperless Billing</label>
+                <select name="PaperlessBilling" id="PaperlessBilling" required>
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="input-group" data-tooltip="Payment method">
+                <label for="PaymentMethod"><i class="fas fa-money-bill-wave"></i> Payment Method</label>
+                <select name="PaymentMethod" id="PaymentMethod" required>
+                    <option value="">Select Method</option>
+                    <option value="Electronic check">Electronic check</option>
+                    <option value="Mailed check">Mailed check</option>
+                    <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                    <option value="Credit card (automatic)">Credit card (automatic)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submitBtn">
+            <i class="fas fa-brain"></i> Predict Churn Probability
+        </button>
+    </form>
+
+    <!-- Results Section -->
+    {% if probability %}
+    <div class="result">
+        <h3><i class="fas fa-chart-pie"></i> Churn Probability: <span class="probability-value">{{ probability }}</span></h3>
+        <h3><i class="fas fa-exclamation-circle"></i> Risk Level: 
+            <span class="{% if risk == 'High' %}risk-high{% elif risk == 'Medium' %}risk-medium{% else %}risk-low{% endif %}">
+                {{ risk }}
+            </span>
+        </h3>
+        
+        <div class="recommendation">
+            <strong><i class="fas fa-lightbulb"></i> Recommendation:</strong>
+            {% if risk == "High" %}
+            <p> High risk of churn detected. Immediate action recommended:</p>
+            <ul>
+                <li>Offer personalized retention discount (15-20%)</li>
+                <li>Assign dedicated account manager</li>
+                <li>Schedule follow-up call within 24 hours</li>
+                <li>Consider loyalty program enrollment</li>
+            </ul>
+            {% elif risk == "Medium" %}
+            <p> Medium risk detected. Proactive monitoring needed:</p>
+            <ul>
+                <li>Send customer satisfaction survey</li>
+                <li>Offer service upgrade or feature trial</li>
+                <li>Schedule check-in call next week</li>
+                <li>Monitor usage patterns closely</li>
+            </ul>
+            {% else %}
+            <p> Low risk customer. Retention strategy:</p>
+            <ul>
+                <li>Continue regular engagement</li>
+                <li>Consider upselling opportunities</li>
+                <li>Send occasional appreciation offers</li>
+                <li>Monitor for any service changes</li>
+            </ul>
+            {% endif %}
+        </div>
+        
+        <div class="prediction-time">
+            <small><i class="fas fa-clock"></i> Prediction generated on {{ current_time }}</small>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript for Enhanced UX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('predictionForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Add loading state to button
+    form.addEventListener('submit', function() {
+        submitBtn.classList.add('loading');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+    });
+    
+    // Auto-calculate Total Charges if empty
+    const tenureInput = document.getElementById('tenure');
+    const monthlyChargesInput = document.getElementById('MonthlyCharges');
+    const totalChargesInput = document.getElementById('TotalCharges');
+    
+    function calculateTotalCharges() {
+        if (tenureInput.value && monthlyChargesInput.value && !totalChargesInput.value) {
+            const total = parseFloat(tenureInput.value) * parseFloat(monthlyChargesInput.value);
+            totalChargesInput.value = total.toFixed(2);
+        }
+    }
+    
+    tenureInput.addEventListener('change', calculateTotalCharges);
+    monthlyChargesInput.addEventListener('change', calculateTotalCharges);
+    
+    // Form validation
+    form.addEventListener('input', function(e) {
+        const input = e.target;
+        if (input.checkValidity()) {
+            input.style.borderColor = '#68d391';
+        } else {
+            input.style.borderColor = '#fc8181';
+        }
+    });
+    
+    // Set current time for prediction timestamp
+    const now = new Date();
+    const timeString = now.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    // If there's a prediction time element, update it
+    const timeElement = document.querySelector('.prediction-time small');
+    if (timeElement && !timeElement.textContent.includes('generated')) {
+        timeElement.innerHTML = `<i class="fas fa-clock"></i> Prediction generated on ${timeString}`;
+    }
+    
+    // Add animation to results
+    const resultDiv = document.querySelector('.result');
+    if (resultDiv) {
+        resultDiv.style.animation = 'fadeIn 0.5s ease-out';
+    }
+});
+</script>
+
+</body>
+</html>
